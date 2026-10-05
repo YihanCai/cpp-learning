@@ -6,12 +6,21 @@
 *.idb
 *.exp
 *.lib
+*.recipe
+*.tlog
+*.lastbuildstate
+*.log
+*.ipch
 
-# VS 工程
+# VS 工程 / 用户私有设置
 .vs/
 Debug/
 Release/
 x64/
+*.vcxproj.user
+*.suo
+*.user
+*.sln.docstates
 
 # 编辑器
 .vscode/
@@ -23,5 +32,5 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# 临时
-_b.bat
+# 助手工作数据（本地记忆，不入库）
+.workbuddy/

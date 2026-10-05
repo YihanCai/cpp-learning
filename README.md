@@ -38,30 +38,44 @@ cpp_learning/
 │       ├── 03_basic_types.cpp     #   基本类型 + sizeof 实测
 │       ├── 03_pitfalls.cpp        #   溢出 & 浮点精度陷阱
 │       └── build.bat              #   MSVC 批量编译脚本
+├── mode01/                        # VS 2022 工程（自己练习用）
+│   ├── mode01.sln
+│   └── mode01/main.cpp
 └── days/
     └── day02.md                   # Day 02 占位
 ```
 
 ## 怎么编译这些代码
 
-**方式一：VS 开发者命令行（推荐）**
-
-```bat
-:: 打开 "Developer Command Prompt for VS 2022"，cd 到代码目录
-cl /nologo /EHsc /utf-8 /std:c++17 03_basic_types.cpp
-03_basic_types.exe
-```
-
-**方式二：直接跑 `build.bat`**
+**方式一：直接跑 `build.bat`（最省事）**
 
 ```bat
 cd day01_basic_types\code
 build.bat
 ```
 
-> ⚠️ 两个关键参数别漏：
-> - `/EHsc` —— 启用标准 C++ 异常处理
-> - `/utf-8` —— 源码按 UTF-8 解析（**输出中文乱码就是漏了它**）
+脚本会自动加载 VS 编译环境，把当前目录所有 `.cpp` 编成 `.exe`。
+
+**方式二：VS 开发者命令行**
+
+```bat
+:: 打开 "Developer Command Prompt for VS 2022"，cd 到代码目录
+cl /nologo /EHsc /std:c++17 03_basic_types.cpp
+03_basic_types.exe
+```
+
+**方式三：直接用 VS 打开 `mode01/mode01.sln`，按 `Ctrl + F5`**
+
+## ⚠️ 编码约定（很重要，别踩）
+
+| 文件类型 | 编码 | 原因 |
+| --- | --- | --- |
+| `.cpp` / `.h` | **UTF-8 带 BOM** | 无 BOM 会被 MSVC 当 GBK 读 → `error C2001`；有 BOM 才不会错位 |
+| `.bat` | **纯 ASCII** | `cmd.exe` 按 GBK 读批处理，UTF-8 中文会打乱命令解析 |
+| `.md` | UTF-8 | GitHub / 编辑器通吃 |
+
+编译时**不要加 `/utf-8`**。它会让字符串以 UTF-8 字节输出，在中文 `cmd`（代码页 936）里反而乱码。
+详细原理和实测对照表见 [Day 01 笔记的 2.5 节](day01_basic_types/README.md#25-中文编码vs-上最大的一个坑实测)。
 
 ## 笔记里记了些什么
 
@@ -70,7 +84,7 @@ build.bat
 - 概念的本质（比如 `std::cout` 里 `std` 是什么、`<<` 为什么能连写）
 - **平台差异**（`long` 在 Windows 4 字节、Linux 8 字节）
 - **实测数据**（`sizeof` 真实结果、溢出到底变成什么数）
-- **踩过的坑**（浮点 `==` 比较、整型静默溢出）
+- **踩过的坑**（浮点 `==` 比较、整型静默溢出、中文编码连环坑）
 
 ## 参考
 

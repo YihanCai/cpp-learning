@@ -83,7 +83,7 @@ C++ 是编译型语言，源码不能被机器直接执行：
 在 **"Developer Command Prompt for VS 2022"** 里执行：
 
 ```bat
-cl /nologo /EHsc /utf-8 /std:c++17 03_basic_types.cpp
+cl /nologo /EHsc /std:c++17 03_basic_types.cpp
 ```
 
 **参数解释：**
@@ -93,11 +93,10 @@ cl /nologo /EHsc /utf-8 /std:c++17 03_basic_types.cpp
 | `cl` | MSVC 编译器命令（Compile and Link） |
 | `/nologo` | 不打印版本横幅 |
 | `/EHsc` | 启用标准 C++ 异常处理，**写 C++ 必须加** |
-| `/utf-8` | 源码和执行字符集都按 UTF-8 处理（**输出中文必须加，否则乱码**） |
 | `/std:c++17` | 指定 C++17 标准 |
 
-> 本目录下的 `build.bat` 就是批量编译脚本，双击或命令行运行即可。
-> 如果不在 VS 开发者命令行里，可以先执行 `vcvars64.bat` 把环境变量加载进来。
+> ⚠️ **不要加 `/utf-8`** —— 中文初学者最容易被这条"建议"带沟里，原因见下面的 2.5 节。
+> 本目录下的 `build.bat` 就是批量编译脚本，会自动加载 VS 环境，双击即可运行。
 
 ### 2.4 VS 工程里常用的快捷键
 
@@ -110,6 +109,54 @@ cl /nologo /EHsc /utf-8 /std:c++17 03_basic_types.cpp
 | `Ctrl + K, Ctrl + F` | 格式化选中代码 |
 
 > **初学者建议一律用 `Ctrl + F5`**——用 `F5` 的话程序跑完窗口瞬间关闭，看不到输出，会误以为"程序没运行"。
+
+### 2.5 中文编码：VS 上最大的一个坑（实测）
+
+这一节是**自己踩出来的**，视频没讲。中文 Windows 上写带中文的 C++，十有八九会撞上。
+
+**背景**：MSVC 默认把源文件按**系统代码页**解析（中文 Windows 是 **936 / GBK**），
+字符串字面量也编译成 GBK 字节送到控制台。而现代编辑器（VS Code、GitHub）默认认为文件是 **UTF-8**。
+两边不一致，就出问题。
+
+**实测结果**（MSVC 14.38，源码里含 `"你好，世界"`）：
+
+| 源文件编码 | 编译参数 | 能否编译 | 输出字节 | 中文控制台显示 |
+| --- | --- | :---: | --- | :---: |
+| GBK | 默认 | ✅ | GBK | ✅ 正常 |
+| **UTF-8 带 BOM** | **默认** | ✅ | GBK | ✅ 正常 ← **推荐** |
+| UTF-8 无 BOM | 默认 | ❌ **C2001 报错** | — | — |
+| UTF-8 无 BOM | `/utf-8` | ✅ | UTF-8 | ❌ **乱码** |
+
+**两个反直觉的结论：**
+
+1. **UTF-8 无 BOM 会直接编译失败**，报的不是乱码而是语法错误：
+   ```
+   warning C4819: 该文件包含不能在当前代码页(936)中表示的字符
+   error C2001: 常量中有换行符          ← 看着像少了个引号，其实是编码问题
+   fatal error C1075: 未找到匹配的标记
+   ```
+   原因：一个中文字符在 UTF-8 里占 3 字节。MSVC 按 GBK（2 字节一字）去读，
+   字节就错位了；全角逗号 `，`（`EF BC 8C`）后面的 `8C` 会和字符串的收尾引号 `"`（`22`）
+   拼成一个 GBK 字符，把引号**吃掉**了 → 字符串没有结尾 → 编译器说"常量中有换行符"。
+
+2. **加了 `/utf-8` 反而让控制台中文乱码**。
+   网上很多"中文乱码就加 `/utf-8`"的说法，其实只在**终端本身是 UTF-8** 时成立。
+   你用的是中文 `cmd`（代码页 936），加了 `/utf-8` 后程序吐出 UTF-8 字节，控制台按 GBK 解释 → 乱码。
+   （真要加，就得配合 `chcp 65001` 把控制台切到 UTF-8。）
+
+**✅ 结论 / 做法：把 `.cpp` 存成「UTF-8 带 BOM」，编译时什么都不用加。**
+
+- 文件是 UTF-8 → GitHub 网页、VS Code 显示都正常，跨平台、可分享
+- 带 BOM → MSVC 一看 BOM 就按 UTF-8 读源码，不会错位，也不报 C4819
+- 不加 `/utf-8` → 字符串字面量自动转成 GBK 字节 → 中文 `cmd` 显示正常
+
+**在 VS 里怎么确保存成带 BOM 的 UTF-8：**
+`文件` → `另存为` → 右下角 `保存` 按钮旁的下拉箭头 → `编码保存` → 选 **`UTF-8 带签名`**。
+（"带签名"就是带 BOM。）
+
+**`.bat` 批处理文件的编码是另一套规则**：`cmd.exe` 按 OEM 代码页（936）读批处理，
+所以 `.bat` 里出现 UTF-8 的中文会**打乱命令解析**（会出现 `'ram' 不是内部或外部命令` 这种怪错）。
+本目录的 `build.bat` 因此**故意只用 ASCII 英文注释**。
 
 ---
 
@@ -224,12 +271,14 @@ int k = static_cast<int>(3.99);   // C++ 推荐写法，意图清晰、编译器
 
 ## 四、今天动手写的代码
 
+### 4.1 命令行示例（本目录内）
+
 | 文件 | 内容 |
 | --- | --- |
-| [`code/01_hello.cpp`](../code/01_hello.cpp) | 第一个程序：`cout`、`endl`、`return 0` |
-| [`code/03_basic_types.cpp`](../code/03_basic_types.cpp) | 全部基本类型的声明、`sizeof` 实测、`INT_MIN/MAX` |
-| [`code/03_pitfalls.cpp`](../code/03_pitfalls.cpp) | 整型溢出 + 浮点精度陷阱的实测复现 |
-| [`code/build.bat`](../code/build.bat) | MSVC 批量编译脚本 |
+| [`code/01_hello.cpp`](code/01_hello.cpp) | 第一个程序：`cout`、`endl`、`return 0` |
+| [`code/03_basic_types.cpp`](code/03_basic_types.cpp) | 全部基本类型的声明、`sizeof` 实测、`INT_MIN/MAX` |
+| [`code/03_pitfalls.cpp`](code/03_pitfalls.cpp) | 整型溢出 + 浮点精度陷阱的实测复现 |
+| [`code/build.bat`](code/build.bat) | MSVC 批量编译脚本（双击即可，自动加载 VS 环境） |
 
 **本机实测输出节选：**
 
@@ -243,6 +292,35 @@ sizeof(long)        = 4   (Windows)
 sizeof(long double) = 8   (MSVC 与 double 同宽)
 ```
 
+### 4.2 自己建的 VS 工程 `mode01/`
+
+按视频 02 集的做法，用 VS 2022 新建了第一个控制台工程，写了 Hello World：
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main()
+{
+	cout << "hello world" << endl;
+	cout << "你好，世界" << endl;
+
+	system("pause");
+	return 0;
+}
+```
+
+**这段代码里的三个点：**
+
+| 写法 | 说明 |
+| --- | --- |
+| `using namespace std;` | 把 `std` 命名空间整个"打开"，之后 `cout` 就不用写 `std::cout`。方便但**大项目里不推荐**（容易命名冲突），现阶段用它没问题，等学到命名空间再回头理解 |
+| `system("pause");` | 调用 Windows 命令暂停，防止 `Ctrl+F5`/双击时窗口一闪而过。**只有 Windows 有**，换 Linux 就编不过，正式项目不用它 |
+| `return 0;` | 又写了一遍——其实 `main` 的 `return 0` 可以省略，编译器会自动补 |
+
+**踩坑记录：** 这个文件最初被 VS 存成了 **GBK** 编码，推到 GitHub 上网页会显示乱码。
+已转成 **UTF-8 带 BOM**（见 2.5 节的结论），转换后实测编译**零警告**、中文显示正常。
+
 ---
 
 ## 五、今日小结
@@ -253,10 +331,12 @@ sizeof(long double) = 8   (MSVC 与 double 同宽)
 3. 基本类型：`char/short/int/long/long long` + `float/double/long double` + `bool`
 4. `sizeof` 是运算符，本机 `int` = 4、`double` = 8
 5. 溢出和浮点精度是两个"不报错但结果错"的坑
+6. **源码存 UTF-8 带 BOM**，编译不加 `/utf-8`——中文既不会编错也不会乱码（2.5 节）
 
 **待办 / 疑问**
 - [ ] 试试把 `03_pitfalls.cpp` 里的 `INT_MAX + 1` 换成 `long long`，验证是否还有问题
 - [ ] `long` 在 Windows 和 Linux 上宽度不同——写跨平台代码时怎么选类型？（下游 `int32_t` / `int64_t` 有答案）
+- [ ] 搞清楚 `using namespace std;` 到底做了什么——等学命名空间时回来补
 
 **下一课预告**：04. 变量和常量
 
