@@ -1,0 +1,27 @@
+# MSVC 编译产物
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+
+# VS 工程
+.vs/
+Debug/
+Release/
+x64/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# 系统
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 临时
+_b.bat
