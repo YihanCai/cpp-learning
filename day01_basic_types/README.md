@@ -342,4 +342,4 @@ int main()
 
 ---
 
-[← 返回总目录](../README.md) | [下一天：Day 02 →](../days/day02.md)
+[← 返回总目录](../README.md) | [下一天：Day 02 变量和常量 →](../day02_variables_constants/README.md)

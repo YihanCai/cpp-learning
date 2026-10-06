@@ -24,7 +24,8 @@
 | 天 | 课程分集 | 主题 | 笔记 | 日期 |
 | :---: | --- | --- | --- | --- |
 | Day 01 | 01 ~ 03 | C++ 简介 / 编译工具 VS / 基本数据类型 | [📖 笔记](day01_basic_types/README.md) | 2026-10-05 |
-| Day 02 | 04 ~ 05 | 变量和常量 / 标识符和关键字 | [📖 笔记](days/day02.md) | 待学 |
+| Day 02 | 04 | 变量和常量 | [📖 笔记](day02_variables_constants/README.md) | 2026-10-06 |
+| Day 03 | 05 | 标识符和关键字 | 待学 | — |
 
 ## 目录结构
 
@@ -38,30 +39,38 @@ cpp_learning/
 │       ├── 03_basic_types.cpp     #   基本类型 + sizeof 实测
 │       ├── 03_pitfalls.cpp        #   溢出 & 浮点精度陷阱
 │       └── build.bat              #   MSVC 批量编译脚本
-├── mode01/                        # VS 2022 工程（自己练习用）
-│   ├── mode01.sln
-│   └── mode01/main.cpp
-└── days/
-    └── day02.md                   # Day 02 占位
+├── day02_variables_constants/     # Day 02
+│   ├── README.md                  #   课程笔记（04）
+│   └── code/
+│       ├── 04_variables.cpp       #   变量：定义、初始化、本质
+│       ├── 04_constants.cpp       #   常量：三种写法、消灭魔法数字
+│       ├── 04_pitfalls.cpp        #   未初始化 / 宏替换 / 作用域陷阱
+│       └── build.bat
+└── mode01/                        # VS 2022 工程（自己练习用）
+    ├── mode01.sln
+    └── mode01/main.cpp
 ```
+
+> 约定：每天一个 `dayNN_主题/` 目录，内含 `README.md`（笔记）+ `code/`（可运行代码）。
 
 ## 怎么编译这些代码
 
 **方式一：直接跑 `build.bat`（最省事）**
 
 ```bat
-cd day01_basic_types\code
+cd day02_variables_constants\code
 build.bat
 ```
 
 脚本会自动加载 VS 编译环境，把当前目录所有 `.cpp` 编成 `.exe`。
+每个 `dayNN_主题/code/` 目录里都有一份。
 
 **方式二：VS 开发者命令行**
 
 ```bat
 :: 打开 "Developer Command Prompt for VS 2022"，cd 到代码目录
-cl /nologo /EHsc /std:c++17 03_basic_types.cpp
-03_basic_types.exe
+cl /nologo /EHsc /std:c++17 04_variables.cpp
+04_variables.exe
 ```
 
 **方式三：直接用 VS 打开 `mode01/mode01.sln`，按 `Ctrl + F5`**
