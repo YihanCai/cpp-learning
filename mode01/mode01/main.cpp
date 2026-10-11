@@ -27,12 +27,15 @@ int main()
 	cout << pi << endl;*/
 
 
-	int a;
-	int b;
-	cout << "请依次输入两个整数" << endl;
-	cin >> a >> b; //从键盘输入整数赋值给a,b   输入一个空一行再输入第二个
+	//int a;
+	//int b;
+	//cout << "请依次输入两个整数" << endl;
+	//cin >> a >> b; //从键盘输入整数赋值给a,b   输入一个空一行再输入第二个
 
-	cout << a << "\t" << b << endl;
+	//cout << a << "\t" << b << endl;
+
+	int value1; //标识符命名
+	
 
 	system("pause");
 	return 0;
