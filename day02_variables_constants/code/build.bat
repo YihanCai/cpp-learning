@@ -3,13 +3,18 @@ REM ============================================================
 REM  Build all .cpp files in this folder with MSVC.
 REM  Usage: double-click, or run "build.bat" in a terminal.
 REM
-REM  IMPORTANT (encoding):
-REM    Source files must be saved as "UTF-8 with BOM".
-REM    - UTF-8 without BOM  -> MSVC reads them as GBK, error C2001
-REM    - adding /utf-8      -> Chinese output garbled in console
-REM  This .bat itself is ASCII-only on purpose: cmd.exe reads
-REM  batch files using the OEM codepage (936 on Chinese Windows),
-REM  so non-ASCII bytes here would break command parsing.
+REM  Why /W3: MSVC defaults to /W1, which silently hides real
+REM  problems such as C4554 (suspicious operator precedence) and
+REM  C4018 (signed/unsigned mismatch). /W3 catches those.
+REM  /W4 is stricter but warns on lots of harmless teaching code,
+REM  so we stop at /W3.
+REM
+REM  Encoding rules (see repo README):
+REM    - .cpp must be saved as "UTF-8 with BOM"
+REM    - do NOT pass /utf-8, it garbles Chinese console output
+REM    - this .bat is ASCII-only WITH CRLF line endings:
+REM      cmd.exe parses batch files in the OEM codepage (936),
+REM      and LF-only endings can break command parsing.
 REM ============================================================
 setlocal enabledelayedexpansion
 
@@ -33,7 +38,7 @@ set FAIL=0
 for %%f in (*.cpp) do (
     echo.
     echo ===^> Compiling %%f
-    cl /nologo /EHsc /std:c++17 "%%f"
+    cl /nologo /EHsc /W3 /std:c++17 "%%f"
     if errorlevel 1 (
         echo     [FAIL] %%f
         set /a FAIL+=1
