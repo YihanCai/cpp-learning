@@ -25,7 +25,8 @@
 | :---: | --- | --- | --- | --- |
 | Day 01 | 01 ~ 03 | C++ 简介 / 编译工具 VS / 基本数据类型 | [📖 笔记](day01_basic_types/README.md) | 2026-10-05 |
 | Day 02 | 04 | 变量和常量 | [📖 笔记](day02_variables_constants/README.md) | 2026-10-06 |
-| Day 03 | 05 | 标识符和关键字 | 待学 | — |
+| Day 03 | 06 | 运算符 | [📖 笔记](day03_operators/README.md) | 2026-10-11 |
+| — | 05 | 标识符和关键字 | 暂缺（跳过） | — |
 
 ## 目录结构
 
@@ -45,6 +46,14 @@ cpp_learning/
 │       ├── 04_variables.cpp       #   变量：定义、初始化、本质
 │       ├── 04_constants.cpp       #   常量：三种写法、消灭魔法数字
 │       ├── 04_pitfalls.cpp        #   未初始化 / 宏替换 / 作用域陷阱
+│       └── build.bat
+├── day03_operators/               # Day 03
+│   ├── README.md                  #   课程笔记（06）
+│   └── code/
+│       ├── 06_arithmetic.cpp      #   算术：整数除法、取模、++i/i++
+│       ├── 06_assign_compare.cpp  #   赋值、比较、= 与 ==
+│       ├── 06_logic.cpp           #   逻辑、短路求值、三目
+│       ├── 06_pitfalls.cpp        #   除零 / 优先级 / 符号不匹配
 │       └── build.bat
 └── mode01/                        # VS 2022 工程（自己练习用）
     ├── mode01.sln
@@ -69,18 +78,30 @@ build.bat
 
 ```bat
 :: 打开 "Developer Command Prompt for VS 2022"，cd 到代码目录
-cl /nologo /EHsc /std:c++17 04_variables.cpp
-04_variables.exe
+cl /nologo /EHsc /W3 /std:c++17 06_arithmetic.cpp
+06_arithmetic.exe
 ```
 
 **方式三：直接用 VS 打开 `mode01/mode01.sln`，按 `Ctrl + F5`**
 
-## ⚠️ 编码约定（很重要，别踩）
+### 编译选项说明
 
-| 文件类型 | 编码 | 原因 |
+| 选项 | 作用 |
+| --- | --- |
+| `/EHsc` | 启用标准 C++ 异常处理，写 C++ 必须加 |
+| `/W3` | 警告等级。**MSVC 默认只开 `/W1`，会把真问题藏起来** |
+| `/std:c++17` | 语言标准 |
+
+> 关于 `/W3`：MSVC 默认的 `/W1` 不会报 `C4554`（运算符优先级可疑）和 `C4018`（有符号/无符号不匹配）
+> 这类真正危险的警告。实测对比见 [Day 03 笔记第七节](day03_operators/README.md)。
+> 没用 `/W4` 是因为它会对大量"声明了没用到"的教学代码报警告，噪音太大。
+
+## ⚠️ 编码 / 格式约定（很重要，别踩）
+
+| 文件类型 | 要求 | 原因 |
 | --- | --- | --- |
 | `.cpp` / `.h` | **UTF-8 带 BOM** | 无 BOM 会被 MSVC 当 GBK 读 → `error C2001`；有 BOM 才不会错位 |
-| `.bat` | **纯 ASCII** | `cmd.exe` 按 GBK 读批处理，UTF-8 中文会打乱命令解析 |
+| `.bat` | **纯 ASCII + CRLF 行尾** | `cmd.exe` 按 GBK 读批处理；UTF-8 中文会打乱命令解析，LF 行尾也会解析出错 |
 | `.md` | UTF-8 | GitHub / 编辑器通吃 |
 
 编译时**不要加 `/utf-8`**。它会让字符串以 UTF-8 字节输出，在中文 `cmd`（代码页 936）里反而乱码。
