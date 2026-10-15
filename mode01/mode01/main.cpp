@@ -34,8 +34,30 @@ int main()
 
 	//cout << a << "\t" << b << endl;
 
-	int value1; //标识符命名
-	
+	//int value1; //标识符命名
+  	//cout << 7.0/2; 算数运算符
+	/*bool is = 1!=1; 比较运算符  
+	cout << is;*/
+	//bool is = 1 == 1 && 2 < 3; //与运算符 左右两边都得满足
+	//cout << is;
+
+	/*bool is = 1 != 1 || 2 > 3;  //或其中一个满足  逻辑
+	cout << is;*/
+
+	/*bool is = !0; //非
+	cout << is;*/
+
+	//位运算符 
+	/*int value1 = 10;
+	int value2=value1 ^ 2;
+	cout << value2;*/
+
+	//赋值运算符
+	int value1 = 10;
+	value1 += 20; //value1 = value1+20
+	cout << value1;
+
+
 
 	system("pause");
 	return 0;
